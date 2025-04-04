@@ -73,3 +73,12 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# API keys and sensitive information
+src/config/firebase.ts
+src/config/api-keys.ts
+src/config/secrets.ts
+**/google-services.json
+**/GoogleService-Info.plist
+.env
+.env.*

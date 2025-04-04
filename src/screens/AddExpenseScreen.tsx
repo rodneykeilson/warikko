@@ -13,18 +13,20 @@ import {
   KeyboardAvoidingView,
   Modal,
 } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import { launchImageLibrary, launchCamera, MediaType, PhotoQuality } from 'react-native-image-picker';
 import { auth } from '../config/firebase';
 import { getGroup, getUserData, addExpense, imageToBase64 } from '../services/firebase';
 import { Group, User, SplitDetail } from '../types';
+import { GroupsStackParamList } from '../types/navigation';
 import { generateEqualSplits, compressBase64Image } from '../utils/helpers';
 
 const AddExpenseScreen = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation<StackNavigationProp<GroupsStackParamList, 'AddExpense'>>();
+  const route = useRoute<RouteProp<GroupsStackParamList, 'AddExpense'>>();
   const { groupId } = route.params;
   
   const [loading, setLoading] = useState(true);
@@ -105,7 +107,7 @@ const AddExpenseScreen = () => {
     }
   };
 
-  const handleDateChange = (event, selectedDate) => {
+  const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
     if (selectedDate) {
       setDate(selectedDate);
@@ -117,8 +119,8 @@ const AddExpenseScreen = () => {
     
     try {
       const options = {
-        mediaType: 'photo',
-        quality: 0.7,
+        mediaType: 'photo' as MediaType,
+        quality: 0.7 as PhotoQuality,
         maxWidth: 800,
         maxHeight: 800,
       };
@@ -213,7 +215,7 @@ const AddExpenseScreen = () => {
       }
 
       // Create expense object
-      const expenseData = {
+      const expenseData: any = {
         groupId,
         description,
         amount: parseFloat(amount),
@@ -221,10 +223,18 @@ const AddExpenseScreen = () => {
         paidBy,
         paidFor,
         date: date.getTime(),
-        category,
-        notes: notes.trim() || undefined,
-        receipt: receiptImage || undefined
+        category
       };
+      
+      // Only add notes if it's not empty
+      if (notes.trim()) {
+        expenseData.notes = notes.trim();
+      }
+      
+      // Only add receipt if it exists
+      if (receiptImage) {
+        expenseData.receipt = receiptImage;
+      }
 
       // Add expense to Firestore
       await addExpense(expenseData);
