@@ -12,15 +12,15 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { ProfileStackParamList } from '../types/navigation';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { auth, db } from '../config/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { auth } from '../config/firebase';
+import { useTheme } from '../context/ThemeContext';
 
 const SettingsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const { isDarkMode, toggleTheme, theme } = useTheme();
   
   // Example settings
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [defaultCurrency, setDefaultCurrency] = useState('USD');
   
   const toggleNotifications = () => {
@@ -29,8 +29,7 @@ const SettingsScreen = () => {
   };
   
   const toggleDarkMode = () => {
-    setDarkModeEnabled(previous => !previous);
-    // In a real app, you would apply the theme change
+    toggleTheme();
   };
   
   const handleCurrencyChange = () => {
@@ -42,103 +41,103 @@ const SettingsScreen = () => {
   };
   
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>General</Text>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.section, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>General</Text>
         
         <View style={styles.settingItem}>
           <View style={styles.settingInfo}>
-            <Icon name="notifications" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Notifications</Text>
+            <Icon name="notifications" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>Notifications</Text>
           </View>
           <Switch
             value={notificationsEnabled}
             onValueChange={toggleNotifications}
-            trackColor={{ false: '#CBD5E0', true: '#5E72E4' }}
-            thumbColor="#FFFFFF"
+            trackColor={{ false: theme.switchTrack.false, true: theme.switchTrack.true }}
+            thumbColor={theme.switchThumb}
           />
         </View>
         
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
         
         <View style={styles.settingItem}>
           <View style={styles.settingInfo}>
-            <Icon name="dark-mode" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Dark Mode</Text>
+            <Icon name="dark-mode" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>Dark Mode</Text>
           </View>
           <Switch
-            value={darkModeEnabled}
+            value={isDarkMode}
             onValueChange={toggleDarkMode}
-            trackColor={{ false: '#CBD5E0', true: '#5E72E4' }}
-            thumbColor="#FFFFFF"
+            trackColor={{ false: theme.switchTrack.false, true: theme.switchTrack.true }}
+            thumbColor={theme.switchThumb}
           />
         </View>
         
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
         
         <TouchableOpacity style={styles.settingItem} onPress={handleCurrencyChange}>
           <View style={styles.settingInfo}>
-            <Icon name="attach-money" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Default Currency</Text>
+            <Icon name="attach-money" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>Default Currency</Text>
           </View>
           <View style={styles.settingValue}>
-            <Text style={styles.settingValueText}>{defaultCurrency}</Text>
-            <Icon name="chevron-right" size={24} color="#CBD5E0" />
+            <Text style={[styles.settingValueText, { color: theme.tertiaryText }]}>{defaultCurrency}</Text>
+            <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
           </View>
         </TouchableOpacity>
       </View>
       
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
+      <View style={[styles.section, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Account</Text>
         
         <TouchableOpacity style={styles.settingItem}>
           <View style={styles.settingInfo}>
-            <Icon name="person" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Edit Profile</Text>
+            <Icon name="person" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>Edit Profile</Text>
           </View>
-          <Icon name="chevron-right" size={24} color="#CBD5E0" />
+          <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
         </TouchableOpacity>
         
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
         
         <TouchableOpacity style={styles.settingItem}>
           <View style={styles.settingInfo}>
-            <Icon name="lock" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Change Password</Text>
+            <Icon name="lock" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>Change Password</Text>
           </View>
-          <Icon name="chevron-right" size={24} color="#CBD5E0" />
+          <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
         </TouchableOpacity>
       </View>
       
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Help & Support</Text>
+      <View style={[styles.section, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Help & Support</Text>
         
         <TouchableOpacity style={styles.settingItem}>
           <View style={styles.settingInfo}>
-            <Icon name="help" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>FAQ</Text>
+            <Icon name="help" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>FAQ</Text>
           </View>
-          <Icon name="chevron-right" size={24} color="#CBD5E0" />
+          <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
         </TouchableOpacity>
         
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
         
         <TouchableOpacity style={styles.settingItem}>
           <View style={styles.settingInfo}>
-            <Icon name="email" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Contact Support</Text>
+            <Icon name="email" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>Contact Support</Text>
           </View>
-          <Icon name="chevron-right" size={24} color="#CBD5E0" />
+          <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
         </TouchableOpacity>
         
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
         
         <TouchableOpacity style={styles.settingItem}>
           <View style={styles.settingInfo}>
-            <Icon name="info" size={24} color="#5E72E4" style={styles.settingIcon} />
-            <Text style={styles.settingText}>About</Text>
+            <Icon name="info" size={24} color={theme.icon} style={styles.settingIcon} />
+            <Text style={[styles.settingText, { color: theme.text }]}>About</Text>
           </View>
-          <Icon name="chevron-right" size={24} color="#CBD5E0" />
+          <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -148,15 +147,12 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   section: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     margin: 16,
     marginBottom: 8,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -165,7 +161,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#32325d',
     marginBottom: 16,
   },
   settingItem: {
@@ -183,7 +178,6 @@ const styles = StyleSheet.create({
   },
   settingText: {
     fontSize: 16,
-    color: '#32325d',
   },
   settingValue: {
     flexDirection: 'row',
@@ -191,12 +185,10 @@ const styles = StyleSheet.create({
   },
   settingValueText: {
     fontSize: 16,
-    color: '#A0AEC0',
     marginRight: 8,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E2E8F0',
   },
 });
 

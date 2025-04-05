@@ -17,9 +17,11 @@ import { auth } from '../config/firebase';
 import { getUserGroups, createGroup } from '../services/firebase';
 import { Group } from '../types';
 import { formatDate } from '../utils/helpers';
+import { useTheme } from '../context/ThemeContext';
 
 const GroupsScreen = () => {
   const navigation = useNavigation();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [groups, setGroups] = useState<Group[]>([]);
@@ -42,7 +44,7 @@ const GroupsScreen = () => {
 
       const userGroups = await getUserGroups(currentUser.uid);
       setGroups(userGroups);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading groups:', error);
       Alert.alert('Error', 'Failed to load groups. Please try again.');
     } finally {
@@ -81,7 +83,7 @@ const GroupsScreen = () => {
       setNewGroupName('');
       setNewGroupDescription('');
       loadGroups();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating group:', error);
       Alert.alert('Error', 'Failed to create group. Please try again.');
     }
@@ -90,37 +92,39 @@ const GroupsScreen = () => {
   const renderGroupItem = ({ item }: { item: Group }) => {
     return (
       <TouchableOpacity
-        style={styles.groupItem}
-        onPress={() => navigation.navigate('GroupDetails', { 
-          groupId: item.id,
-          groupName: item.name
-        })}
+        style={[styles.groupItem, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+        onPress={() => {
+          navigation.navigate('GroupDetails', { 
+            groupId: item.id,
+            groupName: item.name
+          });
+        }}
       >
-        <View style={styles.groupIconContainer}>
+        <View style={[styles.groupIconContainer, { backgroundColor: theme.primary }]}>
           <Text style={styles.groupIconText}>
             {item.name.substring(0, 2).toUpperCase()}
           </Text>
         </View>
         <View style={styles.groupContent}>
-          <Text style={styles.groupName}>{item.name}</Text>
+          <Text style={[styles.groupName, { color: theme.text }]}>{item.name}</Text>
           {item.description && (
-            <Text style={styles.groupDescription} numberOfLines={1}>
+            <Text style={[styles.groupDescription, { color: theme.secondaryText }]} numberOfLines={1}>
               {item.description}
             </Text>
           )}
-          <Text style={styles.groupMembers}>
+          <Text style={[styles.groupMembers, { color: theme.tertiaryText }]}>
             {item.members.length} {item.members.length === 1 ? 'member' : 'members'} • Created {formatDate(item.createdAt)}
           </Text>
         </View>
-        <Icon name="chevron-right" size={24} color="#CBD5E0" />
+        <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
       </TouchableOpacity>
     );
   };
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
@@ -212,7 +216,6 @@ const GroupsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   loadingContainer: {
     flex: 1,
@@ -226,11 +229,9 @@ const styles = StyleSheet.create({
   groupItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -240,7 +241,6 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#5E72E4',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -256,17 +256,14 @@ const styles = StyleSheet.create({
   groupName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#32325d',
     marginBottom: 4,
   },
   groupDescription: {
     fontSize: 14,
-    color: '#525f7f',
     marginBottom: 4,
   },
   groupMembers: {
     fontSize: 12,
-    color: '#8898aa',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -277,13 +274,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#32325d',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#8898aa',
     textAlign: 'center',
   },
   fab: {
@@ -293,11 +288,9 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#5E72E4',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -309,7 +302,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 24,
     width: '90%',
@@ -318,25 +310,20 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#32325d',
     marginBottom: 24,
     textAlign: 'center',
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#525f7f',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f7fafc',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e9ecef',
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#32325d',
     marginBottom: 16,
   },
   textArea: {
@@ -356,15 +343,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cancelButton: {
-    backgroundColor: '#f7fafc',
     marginRight: 8,
   },
   createButton: {
-    backgroundColor: '#5E72E4',
     marginLeft: 8,
   },
   cancelButtonText: {
-    color: '#525f7f',
     fontSize: 16,
     fontWeight: '600',
   },

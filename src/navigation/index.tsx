@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ActivityIndicator, View } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { useTheme } from '../context/ThemeContext';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -35,8 +36,14 @@ const Tab = createBottomTabNavigator();
 
 // Auth Navigator
 const AuthNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+    <AuthStack.Navigator 
+      screenOptions={{ 
+        headerShown: false,
+      }}
+    >
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
       <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
@@ -46,8 +53,17 @@ const AuthNavigator = () => {
 
 // Dashboard Stack Navigator
 const DashboardStackNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
-    <DashboardStack.Navigator>
+    <DashboardStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.card },
+        headerTintColor: theme.text,
+        headerTitleStyle: { color: theme.text },
+        cardStyle: { backgroundColor: theme.background }
+      }}
+    >
       <DashboardStack.Screen 
         name="Dashboard" 
         component={DashboardScreen} 
@@ -64,8 +80,17 @@ const DashboardStackNavigator = () => {
 
 // Groups Stack Navigator
 const GroupsStackNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
-    <GroupsStack.Navigator>
+    <GroupsStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.card },
+        headerTintColor: theme.text,
+        headerTitleStyle: { color: theme.text },
+        cardStyle: { backgroundColor: theme.background }
+      }}
+    >
       <GroupsStack.Screen 
         name="Groups" 
         component={GroupsScreen} 
@@ -74,7 +99,7 @@ const GroupsStackNavigator = () => {
       <GroupsStack.Screen 
         name="GroupDetails" 
         component={GroupDetailsScreen} 
-        options={({ route }) => ({ title: route.params?.groupName || 'Group Details' })}
+        options={({ route }) => ({ title: (route.params as any)?.groupName || 'Group Details' })}
       />
       <GroupsStack.Screen 
         name="AddExpense" 
@@ -92,8 +117,17 @@ const GroupsStackNavigator = () => {
 
 // Settlements Stack Navigator
 const SettlementsStackNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
-    <SettlementsStack.Navigator>
+    <SettlementsStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.card },
+        headerTintColor: theme.text,
+        headerTitleStyle: { color: theme.text },
+        cardStyle: { backgroundColor: theme.background }
+      }}
+    >
       <SettlementsStack.Screen 
         name="Settlements" 
         component={SettlementsScreen} 
@@ -110,8 +144,17 @@ const SettlementsStackNavigator = () => {
 
 // Profile Stack Navigator
 const ProfileStackNavigator = () => {
+  const { theme } = useTheme();
+  
   return (
-    <ProfileStack.Navigator>
+    <ProfileStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.card },
+        headerTintColor: theme.text,
+        headerTitleStyle: { color: theme.text },
+        cardStyle: { backgroundColor: theme.background }
+      }}
+    >
       <ProfileStack.Screen 
         name="Profile" 
         component={ProfileScreen} 
@@ -128,6 +171,8 @@ const ProfileStackNavigator = () => {
 
 // Main Tab Navigator
 const TabNavigator = () => {
+  const { theme, isDarkMode } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -146,9 +191,13 @@ const TabNavigator = () => {
 
           return <Icon name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#5E72E4',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.tertiaryText,
         headerShown: false,
+        tabBarStyle: { 
+          backgroundColor: theme.card,
+          borderTopColor: theme.border 
+        },
       })}
     >
       <Tab.Screen 
@@ -178,7 +227,23 @@ const TabNavigator = () => {
 // Root Navigator
 const RootNavigator = () => {
   const [initializing, setInitializing] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const { theme, isDarkMode } = useTheme();
+  
+  // Create custom navigation theme based on our app theme
+  const navigationTheme = {
+    ...(isDarkMode ? DarkTheme : DefaultTheme),
+    colors: {
+      ...(isDarkMode ? DarkTheme.colors : DefaultTheme.colors),
+      primary: theme.primary,
+      background: theme.background,
+      card: theme.card,
+      text: theme.text,
+      border: theme.border,
+      // Add any required properties with fallbacks to avoid undefined
+      notification: isDarkMode ? DarkTheme.colors.notification : DefaultTheme.colors.notification,
+    },
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -193,14 +258,14 @@ const RootNavigator = () => {
 
   if (initializing) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: theme.background }}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={navigationTheme}>
       {user ? <TabNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );

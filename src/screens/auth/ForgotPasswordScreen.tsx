@@ -14,9 +14,11 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { auth } from '../../config/firebase';
+import { useTheme } from '../../context/ThemeContext';
 
 const ForgotPasswordScreen = () => {
   const navigation = useNavigation();
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -32,9 +34,9 @@ const ForgotPasswordScreen = () => {
       Alert.alert(
         'Password Reset Email Sent',
         'Check your email for instructions to reset your password.',
-        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+        [{ text: 'OK', onPress: () => navigation.navigate('Login' as never) }]
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Password reset error:', error);
       Alert.alert('Error', error.message || 'Failed to send password reset email. Please try again.');
     } finally {
@@ -44,23 +46,28 @@ const ForgotPasswordScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Reset Password</Text>
-          <Text style={styles.subHeaderText}>
+          <Text style={[styles.headerText, { color: theme.text }]}>Reset Password</Text>
+          <Text style={[styles.subHeaderText, { color: theme.secondaryText }]}>
             Enter your email address and we'll send you instructions to reset your password.
           </Text>
         </View>
 
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Email</Text>
+        <View style={[styles.formContainer, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text
+            }]}
             placeholder="Enter your email"
+            placeholderTextColor={theme.tertiaryText}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -69,7 +76,7 @@ const ForgotPasswordScreen = () => {
           />
 
           <TouchableOpacity
-            style={styles.resetButton}
+            style={[styles.resetButton, { backgroundColor: theme.primary }]}
             onPress={handleResetPassword}
             disabled={loading}
           >
@@ -84,7 +91,7 @@ const ForgotPasswordScreen = () => {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>Back to Login</Text>
+            <Text style={[styles.backButtonText, { color: theme.primary }]}>Back to Login</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -95,7 +102,6 @@ const ForgotPasswordScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -109,20 +115,16 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#32325d',
     marginBottom: 10,
   },
   subHeaderText: {
     fontSize: 16,
-    color: '#525f7f',
     textAlign: 'center',
     paddingHorizontal: 20,
   },
   formContainer: {
-    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -131,22 +133,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#525f7f',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f7fafc',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e9ecef',
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#32325d',
     marginBottom: 24,
   },
   resetButton: {
-    backgroundColor: '#5E72E4',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
@@ -164,7 +161,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   backButtonText: {
-    color: '#5E72E4',
     fontSize: 16,
     fontWeight: '600',
   },

@@ -23,11 +23,13 @@ import { getGroup, getUserData, addExpense, imageToBase64 } from '../services/fi
 import { Group, User, SplitDetail } from '../types';
 import { GroupsStackParamList } from '../types/navigation';
 import { generateEqualSplits, compressBase64Image } from '../utils/helpers';
+import { useTheme, darkTheme } from '../context/ThemeContext';
 
 const AddExpenseScreen = () => {
   const navigation = useNavigation<StackNavigationProp<GroupsStackParamList, 'AddExpense'>>();
   const route = useRoute<RouteProp<GroupsStackParamList, 'AddExpense'>>();
   const { groupId } = route.params;
+  const { theme } = useTheme();
   
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -252,53 +254,65 @@ const AddExpenseScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Description</Text>
+        <View style={[styles.formContainer, { backgroundColor: theme.card }]}>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Description</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text 
+            }]}
             placeholder="What was this expense for?"
+            placeholderTextColor={theme.tertiaryText}
             value={description}
             onChangeText={setDescription}
           />
 
-          <Text style={styles.label}>Amount</Text>
-          <View style={styles.amountInputContainer}>
-            <Text style={styles.currencySymbol}>$</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Amount</Text>
+          <View style={[styles.amountInputContainer, { 
+            backgroundColor: theme.inputBackground, 
+            borderColor: theme.border 
+          }]}>
+            <Text style={[styles.currencySymbol, { color: theme.text }]}>$</Text>
             <TextInput
-              style={styles.amountInput}
+              style={[styles.amountInput, { color: theme.text }]}
               placeholder="0.00"
+              placeholderTextColor={theme.tertiaryText}
               value={amount}
               onChangeText={setAmount}
               keyboardType="decimal-pad"
             />
           </View>
 
-          <Text style={styles.label}>Date</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Date</Text>
           <TouchableOpacity
-            style={styles.datePickerButton}
+            style={[styles.datePickerButton, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border 
+            }]}
             onPress={() => setShowDatePicker(true)}
           >
-            <Text style={styles.dateText}>
+            <Text style={[styles.dateText, { color: theme.text }]}>
               {date.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
               })}
             </Text>
-            <Icon name="calendar-today" size={20} color="#5E72E4" />
+            <Icon name="calendar-today" size={20} color={theme.primary} />
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
@@ -306,10 +320,11 @@ const AddExpenseScreen = () => {
               mode="date"
               display="default"
               onChange={handleDateChange}
+              themeVariant={theme === darkTheme ? 'dark' : 'light'}
             />
           )}
 
-          <Text style={styles.label}>Category</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Category</Text>
           <View style={styles.categoriesContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {categories.map((cat) => (
@@ -317,13 +332,15 @@ const AddExpenseScreen = () => {
                   key={cat}
                   style={[
                     styles.categoryChip,
-                    category === cat && styles.categoryChipSelected
+                    { backgroundColor: theme.inputBackground, borderColor: theme.border },
+                    category === cat && [styles.categoryChipSelected, { backgroundColor: theme.primary, borderColor: theme.primary }]
                   ]}
                   onPress={() => setCategory(cat)}
                 >
                   <Text
                     style={[
                       styles.categoryChipText,
+                      { color: theme.secondaryText },
                       category === cat && styles.categoryChipTextSelected
                     ]}
                   >
@@ -334,7 +351,7 @@ const AddExpenseScreen = () => {
             </ScrollView>
           </View>
 
-          <Text style={styles.label}>Paid by</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Paid by</Text>
           <View style={styles.membersContainer}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {group?.members.map((memberId) => {
@@ -347,7 +364,8 @@ const AddExpenseScreen = () => {
                     key={memberId}
                     style={[
                       styles.memberChip,
-                      isSelected && styles.memberChipSelected
+                      { backgroundColor: theme.inputBackground, borderColor: theme.border },
+                      isSelected && [styles.memberChipSelected, { backgroundColor: theme.primary, borderColor: theme.primary }]
                     ]}
                     onPress={() => setPaidBy(memberId)}
                   >
@@ -359,6 +377,7 @@ const AddExpenseScreen = () => {
                     <Text
                       style={[
                         styles.memberChipText,
+                        { color: theme.secondaryText },
                         isSelected && styles.memberChipTextSelected
                       ]}
                     >
@@ -370,12 +389,13 @@ const AddExpenseScreen = () => {
             </ScrollView>
           </View>
 
-          <Text style={styles.label}>Split type</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Split type</Text>
           <View style={styles.splitTypeContainer}>
             <TouchableOpacity
               style={[
                 styles.splitTypeButton,
-                splitType === 'equal' && styles.splitTypeButtonSelected,
+                { backgroundColor: theme.inputBackground, borderColor: theme.border },
+                splitType === 'equal' && [styles.splitTypeButtonSelected, { backgroundColor: theme.primary, borderColor: theme.primary }],
                 { marginRight: 8 }
               ]}
               onPress={() => setSplitType('equal')}
@@ -383,6 +403,7 @@ const AddExpenseScreen = () => {
               <Text
                 style={[
                   styles.splitTypeButtonText,
+                  { color: theme.secondaryText },
                   splitType === 'equal' && styles.splitTypeButtonTextSelected
                 ]}
               >
@@ -392,7 +413,8 @@ const AddExpenseScreen = () => {
             <TouchableOpacity
               style={[
                 styles.splitTypeButton,
-                splitType === 'custom' && styles.splitTypeButtonSelected,
+                { backgroundColor: theme.inputBackground, borderColor: theme.border },
+                splitType === 'custom' && [styles.splitTypeButtonSelected, { backgroundColor: theme.primary, borderColor: theme.primary }],
                 { marginLeft: 8 }
               ]}
               onPress={() => setSplitType('custom')}
@@ -400,6 +422,7 @@ const AddExpenseScreen = () => {
               <Text
                 style={[
                   styles.splitTypeButtonText,
+                  { color: theme.secondaryText },
                   splitType === 'custom' && styles.splitTypeButtonTextSelected
                 ]}
               >
@@ -422,15 +445,16 @@ const AddExpenseScreen = () => {
                           {member?.displayName.substring(0, 2).toUpperCase() || '??'}
                         </Text>
                       </View>
-                      <Text style={styles.customSplitUserName}>
+                      <Text style={[styles.customSplitUserName, { color: theme.text }]}>
                         {isCurrentUser ? 'You' : member?.displayName || 'Unknown'}
                       </Text>
                     </View>
-                    <View style={styles.customSplitAmountContainer}>
-                      <Text style={styles.currencySymbol}>$</Text>
+                    <View style={[styles.customSplitAmountContainer, { backgroundColor: theme.inputBackground, borderColor: theme.border }]}>
+                      <Text style={[styles.currencySymbol, { color: theme.text }]}>$</Text>
                       <TextInput
-                        style={styles.customSplitAmountInput}
+                        style={[styles.customSplitAmountInput, { color: theme.text }]}
                         placeholder="0.00"
+                        placeholderTextColor={theme.tertiaryText}
                         value={customSplits[memberId]}
                         onChangeText={(value) => {
                           setCustomSplits({
@@ -447,9 +471,9 @@ const AddExpenseScreen = () => {
             </View>
           )}
 
-          <Text style={styles.label}>Add receipt (optional)</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Add receipt (optional)</Text>
           <TouchableOpacity
-            style={styles.receiptButton}
+            style={[styles.receiptButton, { backgroundColor: theme.inputBackground, borderColor: theme.border }]}
             onPress={() => setImagePickerVisible(true)}
           >
             {receiptImage ? (
@@ -460,16 +484,21 @@ const AddExpenseScreen = () => {
               />
             ) : (
               <View style={styles.receiptPlaceholder}>
-                <Icon name="receipt" size={32} color="#CBD5E0" />
-                <Text style={styles.receiptPlaceholderText}>Add receipt image</Text>
+                <Icon name="receipt" size={32} color={theme.border} />
+                <Text style={[styles.receiptPlaceholderText, { color: theme.tertiaryText }]}>Add receipt image</Text>
               </View>
             )}
           </TouchableOpacity>
 
-          <Text style={styles.label}>Notes (optional)</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Notes (optional)</Text>
           <TextInput
-            style={[styles.input, styles.notesInput]}
+            style={[styles.input, styles.notesInput, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text 
+            }]}
             placeholder="Add any additional details"
+            placeholderTextColor={theme.tertiaryText}
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -477,7 +506,7 @@ const AddExpenseScreen = () => {
           />
 
           <TouchableOpacity
-            style={styles.submitButton}
+            style={[styles.submitButton, { backgroundColor: theme.primary }]}
             onPress={handleSubmit}
             disabled={submitting}
           >
@@ -497,30 +526,30 @@ const AddExpenseScreen = () => {
         onRequestClose={() => setImagePickerVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add Receipt</Text>
+          <View style={[styles.modalContent, { backgroundColor: theme.card }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>Add Receipt</Text>
             
             <TouchableOpacity
-              style={styles.modalButton}
+              style={[styles.modalButton, { borderBottomColor: theme.border }]}
               onPress={() => pickImage('camera')}
             >
-              <Icon name="camera-alt" size={24} color="#5E72E4" style={styles.modalButtonIcon} />
-              <Text style={styles.modalButtonText}>Take Photo</Text>
+              <Icon name="camera-alt" size={24} color={theme.primary} style={styles.modalButtonIcon} />
+              <Text style={[styles.modalButtonText, { color: theme.text }]}>Take Photo</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={styles.modalButton}
+              style={[styles.modalButton, { borderBottomColor: theme.border }]}
               onPress={() => pickImage('gallery')}
             >
-              <Icon name="photo-library" size={24} color="#5E72E4" style={styles.modalButtonIcon} />
-              <Text style={styles.modalButtonText}>Choose from Gallery</Text>
+              <Icon name="photo-library" size={24} color={theme.primary} style={styles.modalButtonIcon} />
+              <Text style={[styles.modalButtonText, { color: theme.text }]}>Choose from Gallery</Text>
             </TouchableOpacity>
             
             <TouchableOpacity
               style={[styles.modalButton, styles.cancelButton]}
               onPress={() => setImagePickerVisible(false)}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={[styles.cancelButtonText, { color: theme.error }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>

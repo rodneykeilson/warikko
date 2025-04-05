@@ -17,9 +17,11 @@ import { auth, db } from '../config/firebase';
 import { collection, query, where, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Settlement, User } from '../types';
 import { formatCurrency, formatDate } from '../utils/helpers';
+import { useTheme } from '../context/ThemeContext';
 
 const SettlementsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<SettlementsStackParamList>>();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
@@ -85,7 +87,7 @@ const SettlementsScreen = () => {
       }
       
       setUserMap(users);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading settlements:', error);
       Alert.alert('Error', 'Failed to load settlements. Please try again.');
     } finally {
@@ -187,17 +189,17 @@ const SettlementsScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Settlements</Text>
-        <Text style={styles.headerSubtitle}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>Settlements</Text>
+        <Text style={[styles.headerSubtitle, { color: theme.secondaryText }]}>
           Track payments between you and your friends
         </Text>
       </View>
@@ -213,15 +215,15 @@ const SettlementsScreen = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={['#5E72E4']}
+              colors={[theme.primary]}
             />
           }
         />
       ) : (
         <View style={styles.emptyContainer}>
-          <Icon name="payment" size={64} color="#CBD5E0" />
-          <Text style={styles.emptyText}>No settlements yet</Text>
-          <Text style={styles.emptySubtext}>
+          <Icon name="payment" size={64} color={theme.border} />
+          <Text style={[styles.emptyText, { color: theme.text }]}>No settlements yet</Text>
+          <Text style={[styles.emptySubtext, { color: theme.secondaryText }]}>
             Settlements will appear here when you record payments between you and your friends
           </Text>
         </View>
@@ -233,7 +235,6 @@ const SettlementsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   loadingContainer: {
     flex: 1,
@@ -241,21 +242,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#fff',
     paddingVertical: 24,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#32325d',
     marginBottom: 8,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#525f7f',
   },
   listContainer: {
     padding: 16,
@@ -263,11 +260,9 @@ const styles = StyleSheet.create({
   settlementItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -287,12 +282,10 @@ const styles = StyleSheet.create({
   settlementTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#32325d',
     marginBottom: 4,
   },
   settlementSubtitle: {
     fontSize: 14,
-    color: '#8898aa',
   },
   amountText: {
     fontSize: 16,
@@ -308,13 +301,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#32325d',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#8898aa',
     textAlign: 'center',
   },
 });

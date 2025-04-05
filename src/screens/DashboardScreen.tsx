@@ -15,9 +15,11 @@ import { auth } from '../config/firebase';
 import { Expense, Settlement, User } from '../types';
 import { formatCurrency, formatDate, getUserDisplayName } from '../utils/helpers';
 import { getUserData, getUserExpenses, getUserSettlements } from '../services/firebase';
+import { useTheme } from '../context/ThemeContext';
 
 const DashboardScreen = () => {
   const navigation = useNavigation();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [totalBalance, setTotalBalance] = useState(0);
@@ -110,15 +112,15 @@ const DashboardScreen = () => {
     if (item.type === 'expense') {
       return (
         <TouchableOpacity
-          style={styles.activityItem}
+          style={[styles.activityItem, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
           onPress={() => navigation.navigate('ExpenseDetails', { expenseId: item.id })}
         >
-          <View style={styles.activityIconContainer}>
-            <Icon name="receipt" size={24} color="#5E72E4" />
+          <View style={[styles.activityIconContainer, { backgroundColor: `${theme.primary}20` }]}>
+            <Icon name="receipt" size={24} color={theme.primary} />
           </View>
           <View style={styles.activityContent}>
-            <Text style={styles.activityTitle}>{item.description}</Text>
-            <Text style={styles.activitySubtitle}>
+            <Text style={[styles.activityTitle, { color: theme.text }]}>{item.description}</Text>
+            <Text style={[styles.activitySubtitle, { color: theme.tertiaryText }]}>
               {formatDate(item.date)}
             </Text>
           </View>
@@ -126,7 +128,7 @@ const DashboardScreen = () => {
             <Text
               style={[
                 styles.amountText,
-                { color: item.paidBy === auth.currentUser?.uid ? '#4CAF50' : '#F44336' }
+                { color: item.paidBy === auth.currentUser?.uid ? theme.success : theme.error }
               ]}
             >
               {item.paidBy === auth.currentUser?.uid
@@ -143,18 +145,18 @@ const DashboardScreen = () => {
     } else {
       return (
         <TouchableOpacity
-          style={styles.activityItem}
+          style={[styles.activityItem, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
           onPress={() => navigation.navigate('SettlementDetails', { settlementId: item.id })}
         >
-          <View style={styles.activityIconContainer}>
-            <Icon name="payment" size={24} color="#5E72E4" />
+          <View style={[styles.activityIconContainer, { backgroundColor: `${theme.primary}20` }]}>
+            <Icon name="payment" size={24} color={theme.primary} />
           </View>
           <View style={styles.activityContent}>
-            <Text style={styles.activityTitle}>
+            <Text style={[styles.activityTitle, { color: theme.text }]}>
               {item.fromUserId === auth.currentUser?.uid ? 'You paid ' : 'You received '}
               {formatCurrency(item.amount, item.currency)}
             </Text>
-            <Text style={styles.activitySubtitle}>
+            <Text style={[styles.activitySubtitle, { color: theme.tertiaryText }]}>
               {formatDate(item.date)} • {item.status}
             </Text>
           </View>
@@ -162,7 +164,7 @@ const DashboardScreen = () => {
             <Text
               style={[
                 styles.amountText,
-                { color: item.toUserId === auth.currentUser?.uid ? '#4CAF50' : '#F44336' }
+                { color: item.toUserId === auth.currentUser?.uid ? theme.success : theme.error }
               ]}
             >
               {item.toUserId === auth.currentUser?.uid
@@ -178,21 +180,21 @@ const DashboardScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceLabel}>Total Balance</Text>
-          <Text style={[styles.balanceAmount, { color: totalBalance >= 0 ? '#4CAF50' : '#F44336' }]}>
+          <Text style={[styles.balanceLabel, { color: theme.secondaryText }]}>Total Balance</Text>
+          <Text style={[styles.balanceAmount, { color: totalBalance >= 0 ? theme.success : theme.error }]}>
             {formatCurrency(Math.abs(totalBalance))}
           </Text>
-          <Text style={styles.balanceDescription}>
+          <Text style={[styles.balanceDescription, { color: theme.secondaryText }]}>
             {totalBalance > 0
               ? 'You are owed'
               : totalBalance < 0
@@ -202,8 +204,8 @@ const DashboardScreen = () => {
         </View>
       </View>
 
-      <View style={styles.activityContainer}>
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
+      <View style={[styles.activityContainer, { padding: 16 }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Activity</Text>
         {recentActivities.length > 0 ? (
           <FlatList
             data={recentActivities}
@@ -211,14 +213,14 @@ const DashboardScreen = () => {
             keyExtractor={(item) => `${item.type}-${item.id}`}
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5E72E4']} />
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.primary]} />
             }
           />
         ) : (
           <View style={styles.emptyContainer}>
-            <Icon name="receipt-long" size={64} color="#CBD5E0" />
-            <Text style={styles.emptyText}>No recent activity</Text>
-            <Text style={styles.emptySubtext}>
+            <Icon name="receipt-long" size={64} color={theme.border} />
+            <Text style={[styles.emptyText, { color: theme.text }]}>No recent activity</Text>
+            <Text style={[styles.emptySubtext, { color: theme.tertiaryText }]}>
               Your recent expenses and settlements will appear here
             </Text>
           </View>
@@ -231,7 +233,6 @@ const DashboardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   loadingContainer: {
     flex: 1,
@@ -239,18 +240,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#fff',
     paddingVertical: 24,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
   },
   balanceContainer: {
     alignItems: 'center',
   },
   balanceLabel: {
     fontSize: 16,
-    color: '#525f7f',
     marginBottom: 8,
   },
   balanceAmount: {
@@ -260,26 +258,21 @@ const styles = StyleSheet.create({
   },
   balanceDescription: {
     fontSize: 14,
-    color: '#525f7f',
   },
   activityContainer: {
     flex: 1,
-    padding: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#32325d',
     marginBottom: 16,
   },
   activityItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -289,7 +282,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#EDF2FF',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -300,12 +292,10 @@ const styles = StyleSheet.create({
   activityTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#32325d',
     marginBottom: 4,
   },
   activitySubtitle: {
     fontSize: 14,
-    color: '#8898aa',
   },
   activityAmount: {
     marginLeft: 12,
@@ -323,13 +313,11 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#32325d',
     marginTop: 16,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#8898aa',
     textAlign: 'center',
   },
 });

@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { registerUser } from '../../services/firebase';
+import { useTheme } from '../../context/ThemeContext';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
+  const { theme } = useTheme();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +44,7 @@ const RegisterScreen = () => {
       setLoading(true);
       await registerUser(email, password, displayName);
       // Navigation will be handled by the auth state listener in the navigation component
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
       Alert.alert('Registration Failed', error.message || 'Please try again with different credentials');
     } finally {
@@ -52,30 +54,40 @@ const RegisterScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.headerContainer}>
-          <Text style={styles.headerText}>Create Account</Text>
-          <Text style={styles.subHeaderText}>Join Warikko to split expenses with friends</Text>
+          <Text style={[styles.headerText, { color: theme.text }]}>Create Account</Text>
+          <Text style={[styles.subHeaderText, { color: theme.secondaryText }]}>Join Warikko to split expenses with friends</Text>
         </View>
 
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Full Name</Text>
+        <View style={[styles.formContainer, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Full Name</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text
+            }]}
             placeholder="Enter your full name"
+            placeholderTextColor={theme.tertiaryText}
             value={displayName}
             onChangeText={setDisplayName}
             autoCorrect={false}
           />
 
-          <Text style={styles.label}>Email</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text
+            }]}
             placeholder="Enter your email"
+            placeholderTextColor={theme.tertiaryText}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -83,26 +95,36 @@ const RegisterScreen = () => {
             autoCorrect={false}
           />
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Password</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text
+            }]}
             placeholder="Create a password"
+            placeholderTextColor={theme.tertiaryText}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
 
-          <Text style={styles.label}>Confirm Password</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Confirm Password</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text
+            }]}
             placeholder="Confirm your password"
+            placeholderTextColor={theme.tertiaryText}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
           />
 
           <TouchableOpacity
-            style={styles.registerButton}
+            style={[styles.registerButton, { backgroundColor: theme.primary }]}
             onPress={handleRegister}
             disabled={loading}
           >
@@ -114,9 +136,9 @@ const RegisterScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.loginContainer}>
-            <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.loginLink}>Log In</Text>
+            <Text style={[styles.loginText, { color: theme.secondaryText }]}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+              <Text style={[styles.loginLink, { color: theme.primary }]}>Log In</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -128,7 +150,6 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -142,19 +163,15 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#32325d',
     marginBottom: 10,
   },
   subHeaderText: {
     fontSize: 16,
-    color: '#525f7f',
     textAlign: 'center',
   },
   formContainer: {
-    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -164,22 +181,17 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#525f7f',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f7fafc',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e9ecef',
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#32325d',
     marginBottom: 16,
   },
   registerButton: {
-    backgroundColor: '#5E72E4',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
@@ -198,11 +210,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginText: {
-    color: '#525f7f',
     fontSize: 14,
   },
   loginLink: {
-    color: '#5E72E4',
     fontSize: 14,
     fontWeight: '600',
   },

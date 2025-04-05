@@ -16,12 +16,14 @@ import { auth } from '../config/firebase';
 import { getGroup, getGroupExpenses, getUserData } from '../services/firebase';
 import { Group, Expense, User, Balance } from '../types';
 import { formatCurrency, formatDate, calculateBalances, simplifyDebts } from '../utils/helpers';
+import { useTheme } from '../context/ThemeContext';
 
 const GroupDetailsScreen = () => {
   const navigation = useNavigation();
-  const route = useRoute();
+  const route = useRoute<any>();
   const { groupId } = route.params;
-  
+  const { theme } = useTheme();
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [group, setGroup] = useState<Group | null>(null);
@@ -38,7 +40,7 @@ const GroupDetailsScreen = () => {
     try {
       setLoading(true);
       const currentUser = auth.currentUser;
-      
+
       if (!currentUser) {
         return;
       }
@@ -94,20 +96,20 @@ const GroupDetailsScreen = () => {
 
     return (
       <TouchableOpacity
-        style={styles.expenseItem}
-        onPress={() => navigation.navigate('ExpenseDetails', { expenseId: item.id })}
+        style={[styles.expenseItem, { backgroundColor: theme.card, shadowColor: theme.shadow }]}
+        onPress={() => navigation.navigate('ExpenseDetails' as never, { expenseId: item.id } as never)}
       >
-        <View style={styles.expenseIconContainer}>
-          <Icon name="receipt" size={24} color="#5E72E4" />
+        <View style={[styles.expenseIconContainer, { backgroundColor: `${theme.primary}20` }]}>
+          <Icon name="receipt" size={24} color={theme.primary} />
         </View>
         <View style={styles.expenseContent}>
-          <Text style={styles.expenseTitle}>{item.description}</Text>
-          <Text style={styles.expenseSubtitle}>
+          <Text style={[styles.expenseTitle, { color: theme.text }]}>{item.description}</Text>
+          <Text style={[styles.expenseSubtitle, { color: theme.secondaryText }]}>
             {isCurrentUserPayer ? 'You paid' : `${paidByName} paid`} • {formatDate(item.date)}
           </Text>
         </View>
         <View style={styles.expenseAmount}>
-          <Text style={styles.amountText}>
+          <Text style={[styles.amountText, { color: theme.text }]}>
             {formatCurrency(item.amount, item.currency)}
           </Text>
         </View>
@@ -123,7 +125,7 @@ const GroupDetailsScreen = () => {
     const isNeutral = Math.abs(item.amount) < 0.01;
 
     return (
-      <View style={styles.balanceItem}>
+      <View style={[styles.balanceItem, { backgroundColor: theme.card , shadowColor: theme.shadow }]}>
         <View style={styles.balanceUserInfo}>
           <View style={[styles.balanceAvatar, { backgroundColor: isCurrentUser ? '#5E72E4' : '#E53E3E' }]}>
             <Text style={styles.balanceAvatarText}>
@@ -141,22 +143,22 @@ const GroupDetailsScreen = () => {
               color: isNeutral
                 ? '#718096'
                 : isPositive
-                ? '#4CAF50'
-                : '#F44336'
+                  ? '#4CAF50'
+                  : '#F44336'
             }
           ]}
         >
           {isNeutral
             ? 'Settled up'
             : isPositive
-            ? `Gets back ${formatCurrency(Math.abs(item.amount))}`
-            : `Owes ${formatCurrency(Math.abs(item.amount))}`}
+              ? `Gets back ${formatCurrency(Math.abs(item.amount))}`
+              : `Owes ${formatCurrency(Math.abs(item.amount))}`}
         </Text>
       </View>
     );
   };
 
-  const renderDebtItem = ({ item }) => {
+  const renderDebtItem = ({ item }: { item: any }) => {
     const fromUser = members[item.from];
     const toUser = members[item.to];
     const fromUserName = fromUser ? fromUser.displayName : 'Unknown';
@@ -186,36 +188,36 @@ const GroupDetailsScreen = () => {
 
   if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   if (!group) {
     return (
-      <View style={styles.errorContainer}>
-        <Icon name="error" size={64} color="#E53E3E" />
-        <Text style={styles.errorText}>Group not found</Text>
+      <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
+        <Icon name="error" size={64} color={theme.error} />
+        <Text style={[styles.errorText, { color: theme.text }]}>Group not found</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.card }]}>
         <View style={styles.groupInfo}>
-          <View style={styles.groupIconContainer}>
+          <View style={[styles.groupIconContainer, { backgroundColor: theme.primary }]}>
             <Text style={styles.groupIconText}>
               {group.name.substring(0, 2).toUpperCase()}
             </Text>
           </View>
           <View style={styles.groupDetails}>
-            <Text style={styles.groupName}>{group.name}</Text>
+            <Text style={[styles.groupName, { color: theme.text }]}>{group.name}</Text>
             {group.description && (
-              <Text style={styles.groupDescription}>{group.description}</Text>
+              <Text style={[styles.groupDescription, { color: theme.secondaryText }]}>{group.description}</Text>
             )}
-            <Text style={styles.groupMembers}>
+            <Text style={[styles.groupMembers, { color: theme.tertiaryText }]}>
               {group.members.length} {group.members.length === 1 ? 'member' : 'members'}
             </Text>
           </View>
@@ -230,11 +232,11 @@ const GroupDetailsScreen = () => {
           ListHeaderComponent={
             <>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Balances</Text>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>Balances</Text>
               </View>
-              
+
               {balances.length > 0 && (
-                <View style={styles.balancesContainer}>
+                <View style={[styles.balancesContainer]}>
                   <FlatList
                     data={balances}
                     renderItem={renderBalanceItem}
@@ -249,9 +251,9 @@ const GroupDetailsScreen = () => {
               {simplifiedDebts.length > 0 && (
                 <>
                   <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Settle Up</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.text }]}>Settle Up</Text>
                   </View>
-                  <View style={styles.debtsContainer}>
+                  <View style={[styles.debtsContainer, { backgroundColor: theme.background, shadowColor: theme.shadow }]}>
                     <FlatList
                       data={simplifiedDebts}
                       renderItem={renderDebtItem}
@@ -263,14 +265,14 @@ const GroupDetailsScreen = () => {
               )}
 
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Expenses</Text>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>Expenses</Text>
               </View>
-              
+
               {expenses.length === 0 && (
                 <View style={styles.emptyContainer}>
-                  <Icon name="receipt-long" size={64} color="#CBD5E0" />
-                  <Text style={styles.emptyText}>No expenses yet</Text>
-                  <Text style={styles.emptySubtext}>
+                  <Icon name="receipt-long" size={64} color={theme.border} />
+                  <Text style={[styles.emptyText, { color: theme.text }]}>No expenses yet</Text>
+                  <Text style={[styles.emptySubtext, { color: theme.secondaryText }]}>
                     Add an expense to start tracking who owes what
                   </Text>
                 </View>
@@ -280,14 +282,14 @@ const GroupDetailsScreen = () => {
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5E72E4']} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.primary]} />
           }
         />
       </View>
 
       <TouchableOpacity
-        style={styles.fab}
-        onPress={() => navigation.navigate('AddExpense', { groupId: group.id })}
+        style={[styles.fab, { backgroundColor: theme.primary, shadowColor: theme.shadow }]}
+        onPress={() => navigation.navigate('AddExpense' as never, { groupId: group.id } as never)}
       >
         <Icon name="add" size={24} color="#fff" />
       </TouchableOpacity>

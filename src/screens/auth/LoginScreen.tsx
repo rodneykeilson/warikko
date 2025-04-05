@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { loginUser } from '../../services/firebase';
+import { useTheme } from '../../context/ThemeContext';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,7 @@ const LoginScreen = () => {
       setLoading(true);
       await loginUser(email, password);
       // Navigation will be handled by the auth state listener in the navigation component
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert('Login Failed', error.message || 'Please check your credentials and try again');
     } finally {
@@ -40,21 +42,26 @@ const LoginScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.background }]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Warikko</Text>
-          <Text style={styles.tagline}>Split expenses with friends</Text>
+          <Text style={[styles.logoText, { color: theme.primary }]}>Warikko</Text>
+          <Text style={[styles.tagline, { color: theme.secondaryText }]}>Split expenses with friends</Text>
         </View>
 
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Email</Text>
+        <View style={[styles.formContainer, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text
+            }]}
             placeholder="Enter your email"
+            placeholderTextColor={theme.tertiaryText}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -62,10 +69,15 @@ const LoginScreen = () => {
             autoCorrect={false}
           />
 
-          <Text style={styles.label}>Password</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Password</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { 
+              backgroundColor: theme.inputBackground, 
+              borderColor: theme.border,
+              color: theme.text
+            }]}
             placeholder="Enter your password"
+            placeholderTextColor={theme.tertiaryText}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -73,13 +85,13 @@ const LoginScreen = () => {
 
           <TouchableOpacity 
             style={styles.forgotPassword}
-            onPress={() => navigation.navigate('ForgotPassword')}
+            onPress={() => navigation.navigate('ForgotPassword' as never)}
           >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+            <Text style={[styles.forgotPasswordText, { color: theme.primary }]}>Forgot Password?</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.loginButton}
+            style={[styles.loginButton, { backgroundColor: theme.primary }]}
             onPress={handleLogin}
             disabled={loading}
           >
@@ -91,9 +103,9 @@ const LoginScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.registerLink}>Sign Up</Text>
+            <Text style={[styles.registerText, { color: theme.secondaryText }]}>Don't have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register' as never)}>
+              <Text style={[styles.registerLink, { color: theme.primary }]}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -105,7 +117,6 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -119,18 +130,14 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 40,
     fontWeight: 'bold',
-    color: '#5E72E4',
     marginBottom: 10,
   },
   tagline: {
     fontSize: 16,
-    color: '#525f7f',
   },
   formContainer: {
-    backgroundColor: '#fff',
     borderRadius: 10,
     padding: 20,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -139,18 +146,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#525f7f',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f7fafc',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e9ecef',
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#32325d',
     marginBottom: 16,
   },
   forgotPassword: {
@@ -158,12 +161,10 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   forgotPasswordText: {
-    color: '#5E72E4',
     fontSize: 14,
     fontWeight: '600',
   },
   loginButton: {
-    backgroundColor: '#5E72E4',
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: 'center',
@@ -181,11 +182,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   registerText: {
-    color: '#525f7f',
     fontSize: 14,
   },
   registerLink: {
-    color: '#5E72E4',
     fontSize: 14,
     fontWeight: '600',
   },

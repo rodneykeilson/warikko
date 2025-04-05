@@ -18,6 +18,7 @@ import { auth, db } from '../config/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Settlement, User, Group } from '../types';
 import { formatCurrency, formatDate } from '../utils/helpers';
+import { useTheme } from '../context/ThemeContext';
 
 // This type is now defined in types/navigation.ts
 
@@ -25,6 +26,7 @@ const SettlementDetailsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<SettlementsStackParamList>>();
   const route = useRoute<RouteProp<SettlementsStackParamList, 'SettlementDetails'>>();
   const { settlementId } = route.params;
+  const { theme } = useTheme();
   
   const [loading, setLoading] = useState(true);
   const [settlement, setSettlement] = useState<Settlement | null>(null);
@@ -118,17 +120,17 @@ const SettlementDetailsScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   if (!settlement || !fromUser || !toUser) {
     return (
-      <View style={styles.errorContainer}>
-        <Icon name="error" size={64} color="#E53E3E" />
-        <Text style={styles.errorText}>Settlement not found</Text>
+      <View style={[styles.errorContainer, { backgroundColor: theme.background }]}>
+        <Icon name="error" size={64} color={theme.error} />
+        <Text style={[styles.errorText, { color: theme.text }]}>Settlement not found</Text>
       </View>
     );
   }
@@ -138,71 +140,71 @@ const SettlementDetailsScreen = () => {
   const canUpdateStatus = settlement.status === 'pending' && (isCurrentUserPayer || isCurrentUserReceiver);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
           <View style={styles.header}>
             <View style={[styles.statusBadge, { backgroundColor: getStatusColor(settlement.status) + '20' }]}>
               <Text style={[styles.statusText, { color: getStatusColor(settlement.status) }]}>
                 {settlement.status.charAt(0).toUpperCase() + settlement.status.slice(1)}
               </Text>
             </View>
-            <Text style={styles.date}>{formatDate(settlement.date)}</Text>
+            <Text style={[styles.date, { color: theme.secondaryText }]}>{formatDate(settlement.date)}</Text>
           </View>
 
-          <Text style={styles.amount}>{formatCurrency(settlement.amount, settlement.currency)}</Text>
+          <Text style={[styles.amount, { color: theme.text }]}>{formatCurrency(settlement.amount, settlement.currency)}</Text>
 
           <View style={styles.userContainer}>
             <View style={styles.userRow}>
-              <View style={styles.userAvatar}>
+              <View style={[styles.userAvatar, { backgroundColor: theme.primary }]}>
                 <Text style={styles.userAvatarText}>
                   {fromUser.displayName.charAt(0).toUpperCase()}
                 </Text>
               </View>
               <View style={styles.userInfo}>
-                <Text style={styles.userLabel}>From</Text>
-                <Text style={styles.userName}>{fromUser.displayName}</Text>
+                <Text style={[styles.userLabel, { color: theme.secondaryText }]}>From</Text>
+                <Text style={[styles.userName, { color: theme.text }]}>{fromUser.displayName}</Text>
               </View>
             </View>
 
-            <Icon name="arrow-downward" size={24} color="#8898aa" style={styles.arrowIcon} />
+            <Icon name="arrow-downward" size={24} color={theme.secondaryText} style={styles.arrowIcon} />
 
             <View style={styles.userRow}>
-              <View style={[styles.userAvatar, { backgroundColor: '#5E72E4' }]}>
+              <View style={[styles.userAvatar, { backgroundColor: theme.primary }]}>
                 <Text style={styles.userAvatarText}>
                   {toUser.displayName.charAt(0).toUpperCase()}
                 </Text>
               </View>
               <View style={styles.userInfo}>
-                <Text style={styles.userLabel}>To</Text>
-                <Text style={styles.userName}>{toUser.displayName}</Text>
+                <Text style={[styles.userLabel, { color: theme.secondaryText }]}>To</Text>
+                <Text style={[styles.userName, { color: theme.text }]}>{toUser.displayName}</Text>
               </View>
             </View>
           </View>
 
           {group && (
             <>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
               <View style={styles.groupContainer}>
-                <Icon name="group" size={20} color="#8898aa" />
-                <Text style={styles.groupText}>{group.name}</Text>
+                <Icon name="group" size={20} color={theme.primary} />
+                <Text style={[styles.groupText, { color: theme.text }]}>{group.name}</Text>
               </View>
             </>
           )}
 
           {settlement.notes && (
             <>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
               <View style={styles.notesContainer}>
-                <Text style={styles.notesLabel}>Notes</Text>
-                <Text style={styles.notes}>{settlement.notes}</Text>
+                <Text style={[styles.notesLabel, { color: theme.text }]}>Notes</Text>
+                <Text style={[styles.notes, { color: theme.secondaryText }]}>{settlement.notes}</Text>
               </View>
             </>
           )}
 
           {canUpdateStatus && (
             <>
-              <View style={styles.divider} />
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
               <View style={styles.actionsContainer}>
                 {isCurrentUserReceiver && (
                   <TouchableOpacity
@@ -210,7 +212,7 @@ const SettlementDetailsScreen = () => {
                     onPress={() => setConfirmModalVisible(true)}
                   >
                     <Icon name="check-circle" size={20} color="#4CAF50" />
-                    <Text style={styles.confirmButtonText}>Confirm Payment</Text>
+                    <Text style={[styles.confirmButtonText, { color: '#4CAF50' }]}>Confirm Payment</Text>
                   </TouchableOpacity>
                 )}
 
@@ -219,7 +221,7 @@ const SettlementDetailsScreen = () => {
                   onPress={() => handleUpdateStatus('cancelled')}
                 >
                   <Icon name="cancel" size={20} color="#F44336" />
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                  <Text style={[styles.cancelButtonText, { color: '#F44336' }]}>Cancel</Text>
                 </TouchableOpacity>
               </View>
             </>
@@ -234,19 +236,19 @@ const SettlementDetailsScreen = () => {
         onRequestClose={() => setConfirmModalVisible(false)}
       >
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
             <Icon name="check-circle" size={48} color="#4CAF50" />
-            <Text style={styles.modalTitle}>Confirm Payment</Text>
-            <Text style={styles.modalText}>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>Confirm Payment</Text>
+            <Text style={[styles.modalText, { color: theme.secondaryText }]}>
               Are you sure you want to confirm this payment of {formatCurrency(settlement.amount, settlement.currency)}?
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.modalCancelButton]}
+                style={[styles.modalButton, styles.modalCancelButton, { backgroundColor: theme.border }]}
                 onPress={() => setConfirmModalVisible(false)}
                 disabled={updating}
               >
-                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                <Text style={[styles.modalCancelButtonText, { color: theme.text }]}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, styles.modalConfirmButton]}
@@ -270,7 +272,6 @@ const SettlementDetailsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   scrollContainer: {
     padding: 16,

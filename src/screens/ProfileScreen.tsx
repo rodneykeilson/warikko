@@ -15,9 +15,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { auth, db } from '../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { User } from '../types';
+import { useTheme } from '../context/ThemeContext';
 
 const ProfileScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<User | null>(null);
 
@@ -58,15 +60,15 @@ const ProfileScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#5E72E4" />
+      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.primary }]}>
         <View style={styles.avatarContainer}>
           <Text style={styles.avatarText}>
             {userData?.displayName ? userData.displayName.charAt(0).toUpperCase() : '?'}
@@ -76,34 +78,34 @@ const ProfileScreen = () => {
         <Text style={styles.email}>{userData?.email || ''}</Text>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => navigation.navigate('Settings')}
         >
-          <Icon name="settings" size={24} color="#5E72E4" style={styles.menuIcon} />
-          <Text style={styles.menuText}>Settings</Text>
-          <Icon name="chevron-right" size={24} color="#CBD5E0" />
+          <Icon name="settings" size={24} color={theme.primary} style={styles.menuIcon} />
+          <Text style={[styles.menuText, { color: theme.text }]}>Settings</Text>
+          <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
         </TouchableOpacity>
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: theme.divider }]} />
 
         <TouchableOpacity
           style={styles.menuItem}
           onPress={handleSignOut}
         >
-          <Icon name="logout" size={24} color="#F56565" style={styles.menuIcon} />
-          <Text style={[styles.menuText, { color: '#F56565' }]}>Sign Out</Text>
-          <Icon name="chevron-right" size={24} color="#CBD5E0" />
+          <Icon name="logout" size={24} color={theme.error} style={styles.menuIcon} />
+          <Text style={[styles.menuText, { color: theme.error }]}>Sign Out</Text>
+          <Icon name="chevron-right" size={24} color={theme.tertiaryText} />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>About Warikko</Text>
-        <Text style={styles.aboutText}>
+      <View style={[styles.card, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>About Warikko</Text>
+        <Text style={[styles.aboutText, { color: theme.secondaryText }]}>
           Warikko is a simple expense splitting app that helps you track shared expenses with friends and groups.
         </Text>
-        <Text style={styles.versionText}>Version 1.0.0</Text>
+        <Text style={[styles.versionText, { color: theme.tertiaryText }]}>Version 1.0.0</Text>
       </View>
     </ScrollView>
   );
@@ -112,7 +114,6 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafc',
   },
   loadingContainer: {
     flex: 1,
@@ -120,7 +121,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    backgroundColor: '#5E72E4',
     paddingTop: 40,
     paddingBottom: 24,
     alignItems: 'center',
@@ -150,11 +150,9 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.8)',
   },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
     margin: 16,
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -170,29 +168,24 @@ const styles = StyleSheet.create({
   },
   menuText: {
     fontSize: 16,
-    color: '#32325d',
     flex: 1,
   },
   divider: {
     height: 1,
-    backgroundColor: '#E2E8F0',
     marginVertical: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#32325d',
     marginBottom: 12,
   },
   aboutText: {
     fontSize: 16,
-    color: '#525f7f',
     lineHeight: 24,
     marginBottom: 16,
   },
   versionText: {
     fontSize: 14,
-    color: '#A0AEC0',
     textAlign: 'right',
   },
 });
