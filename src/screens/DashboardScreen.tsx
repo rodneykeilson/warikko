@@ -11,10 +11,10 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { auth, db } from '../config/firebase';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { auth } from '../config/firebase';
 import { Expense, Settlement, User } from '../types';
 import { formatCurrency, formatDate, getUserDisplayName } from '../utils/helpers';
+import { getUserData, getUserExpenses, getUserSettlements } from '../services/firebase';
 
 const DashboardScreen = () => {
   const navigation = useNavigation();
@@ -38,73 +38,29 @@ const DashboardScreen = () => {
       }
 
       // Get user data
-      const userDoc = await db.collection('users').doc(currentUser.uid).get();
-      if (userDoc.exists) {
-        setUserData(userDoc.data() as User);
+      const userData = await getUserData(currentUser.uid);
+      if (userData) {
+        setUserData(userData);
       }
 
-      // Get recent expenses
-      const expensesQuery = query(
-        collection(db, 'expenses'),
-        where('paidFor', 'array-contains', { userId: currentUser.uid }),
-        orderBy('date', 'desc'),
-        limit(10)
-      );
+      // Get user expenses
+      const userExpenses = await getUserExpenses(currentUser.uid);
       
-      const expensesSnapshot = await getDocs(expensesQuery);
-      const expenses: Expense[] = [];
-      
-      expensesSnapshot.forEach((doc) => {
-        expenses.push(doc.data() as Expense);
-      });
-
       // Get recent settlements
-      const fromUserQuery = query(
-        collection(db, 'settlements'),
-        where('fromUserId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(5)
-      );
-      
-      const toUserQuery = query(
-        collection(db, 'settlements'),
-        where('toUserId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(5)
-      );
-      
-      const fromUserSnapshot = await getDocs(fromUserQuery);
-      const toUserSnapshot = await getDocs(toUserQuery);
-      
-      const settlements: Settlement[] = [];
-      
-      fromUserSnapshot.forEach((doc) => {
-        settlements.push(doc.data() as Settlement);
-      });
-      
-      toUserSnapshot.forEach((doc) => {
-        settlements.push(doc.data() as Settlement);
-      });
+      const userSettlements = await getUserSettlements(currentUser.uid);
 
       // Calculate total balance
       let balance = 0;
       
       // Add expenses where user paid
-      const paidExpensesQuery = query(
-        collection(db, 'expenses'),
-        where('paidBy', '==', currentUser.uid),
-        orderBy('date', 'desc')
-      );
-      
-      const paidExpensesSnapshot = await getDocs(paidExpensesQuery);
-      
-      paidExpensesSnapshot.forEach((doc) => {
-        const expense = doc.data() as Expense;
-        balance += expense.amount;
+      userExpenses.forEach((expense) => {
+        if (expense.paidBy === currentUser.uid) {
+          balance += expense.amount;
+        }
       });
       
       // Subtract expenses where user owes
-      expenses.forEach((expense) => {
+      userExpenses.forEach((expense) => {
         const userSplit = expense.paidFor.find(split => split.userId === currentUser.uid);
         if (userSplit) {
           balance -= userSplit.amount;
@@ -112,7 +68,7 @@ const DashboardScreen = () => {
       });
       
       // Add settlements where user is receiving money
-      settlements.forEach((settlement) => {
+      userSettlements.forEach((settlement) => {
         if (settlement.toUserId === currentUser.uid && settlement.status === 'completed') {
           balance += settlement.amount;
         } else if (settlement.fromUserId === currentUser.uid && settlement.status === 'completed') {
@@ -124,11 +80,11 @@ const DashboardScreen = () => {
 
       // Combine and sort activities
       const activities = [
-        ...expenses.map(expense => ({
+        ...userExpenses.map(expense => ({
           ...expense,
           type: 'expense'
         })),
-        ...settlements.map(settlement => ({
+        ...userSettlements.map(settlement => ({
           ...settlement,
           type: 'settlement'
         }))
